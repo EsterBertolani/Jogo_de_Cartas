@@ -7,8 +7,8 @@ public class CartaAtaque extends Carta {
     }
 
     @Override
-    public void jogar(Jogador jogAtivo, Jogador jogAtacado) {
-        // ataca o inimigo com o poder da carta
+    public void jogar(Jogador jogAtivo, Jogador inimigo) {
+        jogAtivo.atacar(this.getPoder());
         this.cartasJogadas++;
     }
 
