@@ -10,8 +10,8 @@ public class CartaDefesa extends Carta {
 
     @Override
     public void jogar(Jogador jogAtivo, Jogador jogAtacado) {
-        jogAtacado.defender(this.getPoder());
-        this.cartasJogadas++;
+        jogAtivo.defender(this.getPoder());
+        Carta.cartasJogadas++;
     }
 
 }
