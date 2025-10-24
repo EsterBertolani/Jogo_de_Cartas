@@ -24,11 +24,6 @@ public class Jogador implements iJogavel {
         return defesa;
     }
 
-    /*
-     * =============================================================================
-     * =========
-     */
-
     // Métodos:
     // • atacar → recebe o poder e não retorna nada.
     // Esse método, quando implementado, reduz a defesa do jogador atacado
