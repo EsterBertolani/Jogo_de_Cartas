@@ -41,7 +41,7 @@ public class Principal {
     public static void executarJogo(ArrayList<Carta> baralho, Jogador player1, Jogador player2) {
         int rodada = 1;
 
-        while (verificarVivos(player1, player2) && (Carta.getCartasJogadas() < 10)) {
+        while (verificarVivos(player1, player2) && (Carta.getCartasJogadas() < 30)) {
 
             System.out.printf("\n ======== RODADA [%s] ======== \n", rodada); // só pra organizar melhor
 
