@@ -46,9 +46,9 @@ public class Jogador implements iJogavel {
 
     @Override
     public void atacar(int poder) {
-        int defesa = this.defesa - poder;
+        this.defesa -= poder;
 
-        if (defesa < 0) {
+        if (this.defesa < 0) {
             this.defesa += 100;
             this.vida--;
         }
