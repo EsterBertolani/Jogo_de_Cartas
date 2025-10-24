@@ -6,7 +6,7 @@ public abstract class Carta {
 
     private String nome;
     private int poder;
-    protected int cartasJogadas;
+    protected static int cartasJogadas = 0;
 
     public Carta(String nome, int poder) {
         this.nome = nome;
@@ -21,19 +21,23 @@ public abstract class Carta {
         return poder;
     }
 
-    public int getCartasJogadas() {
+    public static int getCartasJogadas() {
         return cartasJogadas;
     }
 
     @Override
     public String toString() {
-        return String.format(" =================================== \n"
-                + "|| %s \t ||\n"
-                + "|| \t\t ||\n"
-                + "|| %i \t ||\n"
-                + "|| \t\t ||\n"
-                + " =================================== \n",
-                getNome(), getPoder());
+        return String.format(
+                "======================= \n"
+                        + "|| %-" + 21 + "s ||\n"
+                        + "|| %-" + 21 + "s ||\n"
+                        + "|| %-" + 21 + "s ||\n"
+                        + "|| %-" + 21 + "s ||\n"
+                        + " ======================== \n",
+                getNome(),
+                "",
+                "Poder: " + getPoder(),
+                "");
     }
 
     public abstract void jogar(Jogador jogAtivo, Jogador jogAtacado);
