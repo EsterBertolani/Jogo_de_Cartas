@@ -3,6 +3,7 @@ package Main;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Scanner;
 
 import Cartas.Carta;
 import Cartas.CartaAtaque;
@@ -10,23 +11,54 @@ import Cartas.CartaDefesa;
 import Jogavel.Jogador;
 
 public class Principal {
-    public static void main(String[] args) {
-        ArrayList<Carta> baralho = new ArrayList<>(7);
-        Jogador player1 = new Jogador("Aloy");
-        Jogador player2 = new Jogador("Crash");
+    static Scanner scan = new Scanner(System.in);
 
-        baralho = new ArrayList<Carta>(7);
+    public static void main(String[] args) {
+
+        ArrayList<Carta> baralho = new ArrayList<>(7);
         cadastrarCartas(baralho);
 
-        executarJogo(player1, player2, baralho);
+        System.out.print("Digite o nome do Player 1: ");
+        String nome_p1 = scan.nextLine();
+        Jogador player1 = new Jogador(nome_p1);
 
+        System.out.print("Digite o nome do Player 2: ");
+        String nome_p2 = scan.nextLine();
+        Jogador player2 = new Jogador(nome_p2);
+
+        System.out.println("Pressione 'Enter' para iniciar o jogo...");
+        scan.nextLine();
+
+        executarJogo(baralho, player1, player2);
+
+        scan.close();
     }
 
-    // a) Cadastro Inicial
-    // • Criar:
-    // • 2 jogadores com nomes distintos.
-    // • 4 cartas de ataque com poderes: 10, 20, 30 e 40.
-    // • 3 cartas de defesa com poderes: 10, 15 e 20.
+    // ============== ORGANIZAÇÃO DE MÉTODOS ==============
+
+    // -- Executa o jogo
+
+    public static void executarJogo(ArrayList<Carta> baralho, Jogador player1, Jogador player2) {
+        int rodada = 1;
+
+        while (verificarVivos(player1, player2) && (Carta.getCartasJogadas() < 10)) {
+
+            System.out.printf("\n ======== RODADA [%s] ======== \n", rodada); // só pra organizar melhor
+
+            playerDaVez(baralho, player1, player2);
+
+            System.out.println("\nPressione 'Enter' para continuar...");
+            scan.nextLine();
+
+            playerDaVez(baralho, player2, player1);
+
+            rodada++;
+        }
+
+        System.out.println(fimDeJogo(player1, player2));
+    }
+
+    // -- Cadastra cartas no baralho
 
     public static void cadastrarCartas(ArrayList<Carta> baralho) {
         CartaAtaque carta1 = new CartaAtaque("Flecha normal", 10);
@@ -43,16 +75,7 @@ public class Principal {
         Collections.shuffle(baralho);
     }
 
-    // b) Laço Principal do Jogo
-    // Executar enquanto houver mais de um jogador vivo e a quantidade de cartas
-    // jogadas for menor ou igual a 30.
-
-    public static void executarJogo(Jogador j1, Jogador j2, ArrayList<Carta> baralho) {
-        while (verificarVivos(j1, j2) && (Carta.getCartasJogadas() <= 30)) {
-            executarRodada(j1, j2, baralho);
-        }
-
-    }
+    // -- Verifica se os jogadores ainda estão vivos
 
     public static boolean verificarVivos(Jogador j1, Jogador j2) {
         if ((j1.vivo()) && (j2.vivo())) {
@@ -62,71 +85,99 @@ public class Principal {
         }
     }
 
-    public static void executarRodada(Jogador j1, Jogador j2, ArrayList<Carta> baralho) {
-        if ((baralho.isEmpty())) {
-            cadastrarCartas(baralho);
+    // -- Mostra a carta que foi jogada e o status parcial dos jogadores
 
-            Carta cartaJog1 = baralho.removeFirst();
-            cartaJog1.jogar(j1, j2);
-            System.out.println(getStatus(j1, j2, cartaJog1));
+    public static String mostrarCarta(Carta cartaJogada, Jogador jogAtivo, Jogador inimigo) {
+        if (cartaJogada instanceof CartaAtaque) {
+            return String.format("\n >>>>>>>>>>>> ATAQUE <<<<<<<<<<<< \n"
+                    + "[%s] jogou [%s --> %s pts] em [%s]\n" + getStatus(jogAtivo, inimigo),
+                    jogAtivo.getNome(), cartaJogada.getNome(), cartaJogada.getPoder(), inimigo.getNome());
+        } else {
+            return String.format("\n >>>>>>>>>>>> DEFESA <<<<<<<<<<<< \n"
+                    + "[%s] usou [%s --> %s pts]\n" + getStatus(jogAtivo, inimigo),
+                    jogAtivo.getNome(), cartaJogada.getNome(), cartaJogada.getPoder());
+        }
+    }
 
-            if (j2.vivo()) {
-                Carta cartaJog2 = baralho.removeFirst();
-                cartaJog2.jogar(j2, j1);
-                System.out.println(getStatus(j2, j1, cartaJog2));
-            } else {
-                System.out.println(fimDeJogo(j1, j2));
+    public static String getStatus(Jogador jogAtivo, Jogador inimigo) {
+        return String.format("\n ======== STATUS DOS JOGADORES ======== \n"
+                + "|| %-" + 8 + "s --> Vida: %" + 2 + "s | Defesa: %" + 3 + "s ||\n"
+                + "|| %-" + 8 + "s --> Vida: %" + 2 + "s | Defesa: %" + 3 + "s ||\n"
+                + " =======================================\n",
+                jogAtivo.getNome(), jogAtivo.getVida(), jogAtivo.getDefesa(),
+                inimigo.getNome(), inimigo.getVida(), inimigo.getDefesa());
+    }
+
+    // controla quem está jogando
+
+    public static void playerDaVez(ArrayList<Carta> baralho, Jogador jogAtivo, Jogador inimigo) {
+        if (jogAtivo.vivo()) {
+            if (baralho.isEmpty()) {
+                cadastrarCartas(baralho);
             }
+
+            Carta cartaJogada = baralho.removeFirst();
+
+            System.out.printf("Player da vez: [%s]\nPressione 'Enter' para jogar", jogAtivo.getNome());
+            scan.nextLine();
+
+            cartaJogada.jogar(jogAtivo, inimigo);
+
+            System.out.println(mostrarCarta(cartaJogada, jogAtivo, inimigo));
+
+        } else {
+            System.out.printf("\nPlayer [%s] está morto!", jogAtivo.getNome());
+        }
+    }
+
+    public static String fimDeJogo(Jogador player1, Jogador player2) {
+        Jogador vencedor = vencedor(player1, player2);
+
+        String nomeVencedor;
+        if (vencedor == null) {
+            nomeVencedor = "Empate!";
+        } else {
+            nomeVencedor = vencedor.getNome().toUpperCase();
+        }
+        return String.format("\n >>>>>>>>>>>> FIM DE JOGO <<<<<<<<<<<< \n"
+                + getStatus(player1, player2)
+                + "|| %-" + 35 + "s ||\n"
+                + "|| %-" + 35 + "s ||\n"
+                + " =======================================\n",
+                "Vencedor: [" + nomeVencedor + "]",
+                "Cartas jogadas: [" + Carta.getCartasJogadas() + "]");
+    }
+
+    public static Jogador vencedor(Jogador player1, Jogador player2) {
+        boolean p1Vivo = player1.vivo();
+        boolean p2Vivo = player2.vivo();
+
+        // nocaute
+        if (p1Vivo && !p2Vivo) {
+            return player1;
+        }
+        if (!p1Vivo && p2Vivo) {
+            return player2;
         }
 
+        // ambos vivos, 30 cartas
+
+        if (player1.getVida() > player2.getVida()) { // maior número de vidas
+            return player1;
+        }
+        if (player2.getVida() > player1.getVida()) {
+            return player2;
+        }
+
+        // maior defesa
+        if (player1.getDefesa() > player2.getDefesa()) {
+            return player1;
+        }
+        if (player2.getDefesa() > player1.getDefesa()) {
+            return player2;
+        }
+
+        return null; // empate total
     }
-
-    public static String getStatus(Jogador jogAtivo, Jogador jogAtacado, Carta cartaJogAtivo) {
-        return String.format("\n===== STATUS DOS JOGADORES ===== \n"
-                + "|| [%s] jogou [%s --> %s pts] em [%s]\n"
-                + "========================================\n"
-                + "|| %s --> Vida: %s   | Defesa: %s   ||\n"
-                + "|| %s --> Vida: %s   | Defesa: %s   ||\n",
-                jogAtivo.getNome(), cartaJogAtivo.getNome(), cartaJogAtivo.getPoder(), jogAtacado.getNome(),
-                jogAtivo.getNome(), jogAtivo.getVida(), jogAtivo.getDefesa(),
-                jogAtacado.getNome(), jogAtacado.getVida(), jogAtacado.getDefesa());
-
-    }
-
-    public static String fimDeJogo(Jogador jogAtivo, Jogador jogAtacado) {
-        return String.format("\n===== FIM DE JOGO ===== \n"
-                + "   -- status dos jogadores --\n"
-                + "|| %s --> Vida: %s   | Defesa: %s   ||\n"
-                + "|| %s --> Vida: %s   | Defesa: %s   ||\n"
-                + "========================================\n"
-                + "VENCEDOR: [%s]\n"
-                + "Total de Cartas jogadas: %s\n",
-                jogAtivo.getNome(), jogAtivo.getVida(), jogAtivo.getDefesa(),
-                jogAtacado.getNome(), jogAtacado.getVida(), jogAtacado.getDefesa(),
-                /* getVencedor(), */
-                Carta.getCartasJogadas());
-    }
-
-    // Dentro do laço:
-    // 1. Cada jogador vivo recebe uma carta aleatória, que pode ser de defesa ou de
-    // ataque.
-    // 2. O jogador 1 executa sua jogada contra o jogador 2.
-    // 3. Se o jogador 2 ainda estiver vivo, ele também joga.
-    // 4. Exibir o resultado parcial da rodada, mostrando:
-    // • Nome do jogador,
-    // • Nome do inimigo,
-    // • Tipo de carta jogada,
-    // • Situação atual de vida e defesa de cada um.
-
-    // c) Fim do Jogo - o jogo se encerra quando:
-    // • houver apenas um jogador vivo → ele é o vencedor.
-    // • ou quando as 30 cartas forem jogadas → vence o jogador com:
-    // • maior número de vidas;
-    // • em caso de empate, o de maior defesa.
-
-    // d) Exibir Resultado Final
-    // • Mostrar a lista de jogadores com suas vidas e defesas finais.
-    // • Exibir o número total de cartas jogadas.
-    // • Indicar o vencedor.
 
 }
